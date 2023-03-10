@@ -1,0 +1,25 @@
+<!--<!DOCTYPE html>-->
+
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/top.css}">
+</head>
+<body>
+    <div id="top_title" >欢迎来到QQZone</div>
+    <div id="top_link_div" >
+        <a th:href="@{|/page.do?operate=page&page=login|}"  target="_top">退出</a>
+        <span th:text="|欢迎来到${session.friend.nickName}的空间|">欢迎进入XX空间!</span>
+
+        <!--        判断是否进入自己的空间的依据是：userBasic 和 friend 这两个key 中userBasic 是否相同
+                    有字符的拼接需要加 |
+        -->
+        <span th:if="${session.userBasic.id!=session.friend.id}">
+           <a th:href="@{|/user.do?operate=friend&id=${session.userBasic.id}|}"  target="_top">返回自己的空间!</a>
+        </span>
+    </div>
+
+</body>
+</html>

@@ -1,2 +1,0 @@
-# QQZone
- atguigu.QQZone
