@@ -1,50 +1,64 @@
 package com.Qzhou.myssm.basedao;
 
+import com.alibaba.druid.pool.DruidDataSourceFactory;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
+import javax.sql.DataSource;
 
 public class ConnUtil {
+    private static ThreadLocal<Connection> threadLocal = new ThreadLocal();
+    static Properties properties = new Properties();
 
-    private static ThreadLocal<Connection> threadLocal = new ThreadLocal<>();
-    //private static ThreadLocal<Object> threadLocal2 = new ThreadLocal<>();
-    //private static ThreadLocal<Object> threadLocal3 = new ThreadLocal<>();
-
-    public static final String DRIVER = "com.mysql.jdbc.Driver" ;
-    public static final String URL = "jdbc:mysql://localhost:3306/qqzonedb?useUnicode=true&characterEncoding=utf-8&useSSL=false";
-    public static final String USER = "root";
-    public static final String PWD = "zhouq" ;
-
-    private static Connection createConn(){
-        try {
-            //1.加载驱动
-            Class.forName(DRIVER);
-            //2.通过驱动管理器获取连接对象
-            return DriverManager.getConnection(URL, USER, PWD);
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
-        return null ;
+    public ConnUtil() {
     }
 
-    public static Connection getConn(){
-        Connection conn = threadLocal.get();
-        if(conn==null){
-            conn =createConn();
+    private static Connection createConn() {
+        try {
+            DataSource druidDataSource = DruidDataSourceFactory.createDataSource(properties);
+            return druidDataSource.getConnection();
+        } catch (SQLException var1) {
+            var1.printStackTrace();
+        } catch (Exception var2) {
+            var2.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Connection getConn() {
+        Connection conn = (Connection)threadLocal.get();
+        if (conn == null) {
+            conn = createConn();
             threadLocal.set(conn);
         }
-        return threadLocal.get() ;
+
+        return (Connection)threadLocal.get();
     }
 
     public static void closeConn() throws SQLException {
-        Connection conn = threadLocal.get();
-        if(conn==null){
-            return ;
-        }
-        if(!conn.isClosed()){
-            conn.close();
-            //threadLocal.set(null);
-            threadLocal.remove();
+        Connection conn = (Connection)threadLocal.get();
+        if (conn != null) {
+            if (!conn.isClosed()) {
+                conn.close();
+                threadLocal.remove();
+            }
+
         }
     }
+
+    static {
+        InputStream is = ConnUtil.class.getClassLoader().getResourceAsStream("jdbc.properties");
+
+        try {
+            properties.load(is);
+        } catch (IOException var2) {
+            var2.printStackTrace();
+        }
+
+    }
 }
+
+
